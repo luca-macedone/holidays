@@ -9,7 +9,7 @@ const data_url =
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const [holidays, setHolidays] = useState([]);
   const [active, setActive] = useState(0);
 
   useEffect(() => {
@@ -17,29 +17,46 @@ function App() {
     axios
       .get(data_url)
       .then((response) => {
-        // console.log(response);
+        // console.log(response.data.data);
         if (response.data.success) {
-          setData(response.data.data);
-          setIsLoading(false);
+          let { data } = response.data;
+          setHolidays(data);
           // console.log(data);
         }
       })
       .catch((error) => {
         console.error(error);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, []);
 
-  const nextItem = () => {};
+  useEffect(() => {}, [active]);
 
-  const prevItem = () => {};
+  const nextItem = () => {
+    if (active + 1 < holidays.length) {
+      setActive(active + 1);
+    } else {
+      setActive(0);
+    }
+  };
+
+  const prevItem = () => {
+    if (active - 1 > 0) {
+      setActive(active - 1);
+    } else {
+      setActive(holidays.length - 1);
+    }
+  };
 
   const formattedPrice = (price) => {
     return (price / 100).toFixed(2);
   };
 
   return (
-    <div className="App bg-dark h-screen">
-      <div className="container-sm py-5 ">
+    <div className="App bg-dark min-vh-100">
+      <div className="container-sm py-4 ">
         <div className="mb-5">
           <h1 className="text-center fw-bold text-capitalize text-light">
             Le nostre vacanze
@@ -48,61 +65,57 @@ function App() {
         </div>
         <div className="row d-flex justify-content-center">
           <div className="col-8">
-            {!isLoading && (
-              <>
-                {data.map((item, index) => {
-                  return (
-                    <div
-                      className={
-                        index === 0
-                          ? "card border-0 rounded-2 shadow bg-dark"
-                          : "card border-0 rounded-2 shadow bg-dark hidden"
-                      }
-                      key={item.id}
-                    >
-                      <img
-                        className="card-img-top rounded-2"
-                        src={item.img}
-                        alt={item.titolo}
-                      ></img>
-                      <div className="card-body p-4 rounded-2 bg-dark text-light">
-                        <h5 className="fw-bold">{item.titolo}</h5>
-                        <p className="text-secondary">{item.descrizione}</p>
-                        <div className="d-flex align-items-start justify-content-between w-100">
-                          <div className="d-flex flex-column align-items-center justify-content-between gap-3 ">
-                            <span>{item.durata}</span>
-                            <button
-                              type="button"
-                              className="btn btn-info rounded-pill px-4"
-                            >
-                              <FontAwesomeIcon
-                                icon={faArrowLeft}
-                              ></FontAwesomeIcon>
-                            </button>
-                          </div>
-                          <div className="d-flex flex-column align-items-center justify-content-between gap-3 ">
-                            <span className="text-info fw-semibold ">
-                              {formattedPrice(item.prezzo)} €
-                            </span>
-                            <button
-                              type="button"
-                              className="btn btn-info rounded-pill px-4"
-                            >
-                              <FontAwesomeIcon
-                                icon={faArrowRight}
-                              ></FontAwesomeIcon>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </>
-            )}
             {isLoading && (
               <>
-                <h1>loading ...</h1>
+                <h1 className="text-light text-capitalize text-center">
+                  loading ...
+                </h1>
+              </>
+            )}
+            {!isLoading && (
+              <>
+                <div
+                  className="card border-0 rounded-2 shadow bg-dark"
+                  key={holidays[active].id}
+                >
+                  <img
+                    className="card-img-top rounded-2"
+                    src={holidays[active].img}
+                    alt={holidays[active].titolo}
+                  ></img>
+                  <div className="card-body p-4 rounded-2 bg-dark text-light">
+                    <h5 className="fw-bold">{holidays[active].titolo}</h5>
+                    <p className="text-secondary">
+                      {holidays[active].descrizione}
+                    </p>
+                    <div className="d-flex align-items-start justify-content-between w-100">
+                      <div className="d-flex flex-column align-items-center justify-content-between gap-3 ">
+                        <span>{holidays[active].durata}</span>
+                        <button
+                          type="button"
+                          className="btn btn-info rounded-pill px-4"
+                          onClick={prevItem}
+                        >
+                          <FontAwesomeIcon icon={faArrowLeft}></FontAwesomeIcon>
+                        </button>
+                      </div>
+                      <div className="d-flex flex-column align-items-center justify-content-between gap-3 ">
+                        <span className="text-info fw-semibold ">
+                          {formattedPrice(holidays[active].prezzo)} €
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-info rounded-pill px-4"
+                          onClick={nextItem}
+                        >
+                          <FontAwesomeIcon
+                            icon={faArrowRight}
+                          ></FontAwesomeIcon>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
           </div>
